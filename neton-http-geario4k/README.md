@@ -1,11 +1,11 @@
 # Experimental Geario H1 adapter
 
 This module contains only the Neton adapter and C interop declarations.
-The Rust engine and FFI implementation remain in the sibling `geario-http`
+The Rust engine and FFI implementation remain in the separate `geario-http`
 repository. No Geario code is embedded in Neton's default HTTP adapter.
 
-The module is excluded from the default build. Enable it explicitly with
-`-Pgeario4k.experimental=true`. It does not participate in framework Maven
+The module is in an independent repository. Build it with an explicit
+`-Pgeario.source=/absolute/path/to/geario-http`. It does not participate in framework Maven
 publishing or change the default HTTP engine. The existing experimental
 `neton.http.geario.GearioHttpAdapter` class name is retained; the module name
 does not imply a published Geario4k engine exists.

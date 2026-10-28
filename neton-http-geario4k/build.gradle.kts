@@ -15,7 +15,8 @@ val rustTriples = mapOf(
     "linuxX64" to "x86_64-unknown-linux-gnu",
     "linuxArm64" to "aarch64-unknown-linux-gnu",
 )
-val ffiDir = rootProject.file("../geario-http/geario-http-ffi")
+val gearioSource = providers.gradleProperty("geario.source").orNull
+val ffiDir = rootProject.file(gearioSource ?: "build/geario-source-not-configured").resolve("geario-http-ffi")
 val ffiHeader = ffiDir.resolve("include")
 // Cargo keeps the target directory at the workspace root, not in the member crate.
 val ffiTarget = ffiDir.parentFile.resolve("target")
@@ -30,9 +31,9 @@ kotlin {
         val nativeMain by creating {
             dependsOn(commonMain.get())
             dependencies {
-                api(project(":neton-http"))
-                api(project(":neton-core"))
-                implementation(project(":neton-logging"))
+                api("com.netonstream:neton-http:${providers.gradleProperty("netonVersion").get()}")
+                api("com.netonstream:neton-core:${providers.gradleProperty("netonVersion").get()}")
+                implementation("com.netonstream:neton-logging:${providers.gradleProperty("netonVersion").get()}")
                 implementation(libs.kotlinx.coroutines.core)
             }
         }
@@ -73,6 +74,11 @@ kotlin {
 
 rustTriples.forEach { (targetName, triple) ->
     tasks.register<Exec>("cargoBuild${targetName.replaceFirstChar { it.uppercase() }}") {
+        doFirst {
+            require(gearioSource != null && ffiDir.isDirectory) {
+                "Set -Pgeario.source=/absolute/path/to/a/reviewed/geario-http checkout"
+            }
+        }
         workingDir(ffiDir)
         commandLine(
             "cargo", "rustc", "--release", "--locked", "--no-default-features",
